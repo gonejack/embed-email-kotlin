@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.apache.tika:tika-core:2.1.0")
     implementation("org.simplejavamail:simple-java-mail:6.6.1")
     implementation("org.simplejavamail:smime-module:6.6.1")
     implementation("org.slf4j:slf4j-simple:1.7.32")

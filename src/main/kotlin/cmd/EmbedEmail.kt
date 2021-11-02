@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.sf.jmimemagic.Magic
 import okhttp3.*
+import org.apache.tika.mime.MimeTypes
 import org.jsoup.Jsoup
 import org.simplejavamail.api.email.Email
 import org.simplejavamail.converter.EmailConverter
@@ -17,7 +18,6 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URI
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.security.MessageDigest
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -148,10 +148,19 @@ class EmbedEmail(
                 })
             }
 
-            File(media).mkdirs()
+            val mime = resp.headers["content-type"]
+            val file = let {
+                if (mime.isNullOrEmpty()) {
+                    val name = md5(url).toHex() + "." + Path.of(url).extension
+                    Path.of(media, name).toFile()
+                } else {
+                    val ext = MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(mime).extension
+                    val name = md5(url).toHex() + ext
+                    Path.of(media, mime, name).toFile()
+                }
+            }
+            file.parentFile.mkdirs()
 
-            val name = listOf(md5(url).toHex(), Path.of(url).extension).joinToString(".")
-            val file = Paths.get(media, name).toFile()
             resp.body?.byteStream().use { i ->
                 file.outputStream().use { o ->
                     i?.copyTo(o)
