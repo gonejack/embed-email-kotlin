@@ -3,14 +3,15 @@ import org.apache.commons.cli.*
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    val opts = Options()
-    val verbose = Option("v", "verbose", false, "verbose printing").also { opts.addOption(it) }
+    val opts = Options().apply {
+        addOption(Option("v", "verbose", false, "verbose printing"))
+    }
 
     try {
         val parsed = DefaultParser().parse(opts, args)
 
         cmd.EmbedEmail(
-            verbose = verbose.getValue("false").toBoolean()
+            verbose = parsed.hasOption("v")
         ).run(parsed.argList)
 
         exitProcess(0)
